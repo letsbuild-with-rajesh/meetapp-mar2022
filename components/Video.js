@@ -1,23 +1,19 @@
 import React, { useEffect, useRef } from "react";
 
-const Video = ({data: { stream, videoType } }) => {
+const Video = ({stream}) => {
   const videoRef = useRef(null);
 
   useEffect(() => {
-		stream && stream.then(videoStream => {
+		if (stream) {
 			let video = videoRef.current;
 			let tracks = video?.srcObject?.getTracks();
 			tracks && tracks.forEach(track => {
 				if (track.kind === 'video') track.stop();
 			});
-			video.srcObject = videoStream;
+			video.srcObject = stream;
 			video.play();
-		})
-		.catch(err => {
-			console.error("error:", err);
-		});
-
-  }, [stream, videoType]);
+		}
+  }, [stream]);
 
   return <video playsInline autoPlay ref={videoRef} />
 };
