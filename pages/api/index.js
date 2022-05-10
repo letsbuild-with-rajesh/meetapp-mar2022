@@ -8,6 +8,7 @@ const socketHandler = (req, res) => {
     io.on('connection', socket => {
       socket.on("join-room", (meetParams) => {
         const { username, meet_name, meet_id, peer_id } = meetParams;
+        socket.join(meet_id);
         if (!meets[meet_id]) {
           meets[meet_id] = { meet_name, users: {} }
         }
@@ -21,7 +22,7 @@ const socketHandler = (req, res) => {
         });
 
         socket.emit("sync-existing-users", usersInMeet);
-        socket.broadcast.emit('new-user-connected', { username, peer_id });
+        socket.broadcast.to(meet_id).emit('new-user-connected', { username, peer_id });
       });
     })
     res.socket.server.io = io

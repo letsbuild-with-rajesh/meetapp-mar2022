@@ -141,7 +141,7 @@ export default function Meet({ username, meetname, meetid}) {
 	return showContent && (
 		<main className={styles.main}>
 			<button onClick={toggleVideo}>Toggle Webcam & Screen Share</button>
-			<p>Meet ID: {meetid}</p>
+			<p>Meet ID: {meetid}&nbsp;<button onClick={()=>navigator.clipboard.writeText(meetid)}>Copy</button></p>
 			<div className={styles.videosContainer}>
 				<Video stream={userVideoData.stream}/>
 				{peerStreams.length > 0 && peerStreams.map((peerStream, id) => {
