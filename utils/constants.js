@@ -1,3 +1,4 @@
+export const NO_STREAM = "No stream";
 export const WEBCAM = "Webcam";
 export const SCREEN_SHARE = "Screen share";
 export const VIDEO_WIDTH = 720;

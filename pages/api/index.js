@@ -1,19 +1,27 @@
 import { Server } from 'socket.io'
 
-const users = {};
+const meets = {};
 
 const socketHandler = (req, res) => {
   if (!res.socket.server.io) {
     const io = new Server(res.socket.server)
     io.on('connection', socket => {
-      socket.on("join-room", (roomId, peerId) => {
-        if (!users[roomId]) users[roomId] = [];
+      socket.on("join-room", (meetParams) => {
+        const { username, meet_name, meet_id, peer_id } = meetParams;
+        if (!meets[meet_id]) {
+          meets[meet_id] = { meet_name, users: {} }
+        }
+        meets[meet_id].users[peer_id] = username;
 
-        users[roomId].push(socket.id);
-        const usersInThisRoom = users[roomId].filter(id => id !== socket.id);
+        const usersInMeet = [];
+        Object.keys(meets[meet_id].users).map((peerId)=>{
+          if (peerId !== peer_id) {
+            usersInMeet.push({ peer_id: peerId, username: meets[meet_id].users[peerId] });
+          }
+        });
 
-        socket.emit("other-users-in-room", usersInThisRoom);
-        socket.broadcast.emit('new-user-connected', peerId)
+        socket.emit("sync-existing-users", usersInMeet);
+        socket.broadcast.emit('new-user-connected', { username, peer_id });
       });
     })
     res.socket.server.io = io

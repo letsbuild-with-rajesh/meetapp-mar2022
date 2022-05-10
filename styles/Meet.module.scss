@@ -1,0 +1,36 @@
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  margin: 2rem 0;
+}
+
+.videosContainer {
+	display: flex;
+	overflow-x: auto;
+	gap: 4%;
+	padding: 2%;
+	border: 1px solid black;
+	margin: 0 4%;
+}
+
+.participantsContainer {
+	display: flex;
+	overflow-x: auto;
+	gap: 2%;
+	border: 1px solid black;
+	width: 92%;
+	padding: 1%;
+}
+
+.participantName {
+	border: 1px solid black;
+	border-radius: 4px;
+	padding: 8px;
+}
+
+.video {
+	width: 100%;
+}
