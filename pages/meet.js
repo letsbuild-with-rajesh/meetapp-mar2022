@@ -17,7 +17,7 @@ export default function Meet({ username, meetname, meetid}) {
 	const [peerStreams, updatePeerStreams] = useState([]);
 	const participantsRef = useRef({});
 	const [participants, updateParticipants ] = useState([]);
-	const showContent = !(!username || !meetname || !meetid);
+	const showContent = !(!username || !(meetname || meetid));
 	const router = useRouter();
 
 	const toggleVideo = () => {
