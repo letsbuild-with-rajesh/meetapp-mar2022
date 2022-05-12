@@ -13,12 +13,22 @@ export default function Meet({ username, meetname, meetid}) {
 	});
 	const socketRef = useRef();
 	const [userVideoData, updateUserVideoData] = useState(initialUserVideoData);
-	const peersRef = useRef([]);
-	const [peerStreams, updatePeerStreams] = useState([]);
 	const participantsRef = useRef({});
-	const [participants, updateParticipants ] = useState([]);
+	const [ participants, setParticipants ] = useState([])
 	const showContent = !(!username || !(meetname || meetid));
 	const router = useRouter();
+
+	const updateParticipantState = () => {
+		const participants = participantsRef.current.value || {};
+		const data = Object.keys(participants).map((key)=> {
+			return {
+				stream: participants[key].stream,
+				name: participants[key].name,
+				id: key
+			}
+		});
+		setParticipants(data);
+	}
 
 	const toggleVideo = () => {
 		const streamPromise = userVideoData.streamType === WEBCAM ? getScreenShareStream() : getWebCamStream();
@@ -30,28 +40,48 @@ export default function Meet({ username, meetname, meetid}) {
 		})
 	}
 
-	const addPeer = (peerStream) => {
-		const newPeerStreams = [...(peersRef?.current?.value ? peersRef.current.value : [])];
-		const exist = (-1 !== newPeerStreams.findIndex((val)=>{
-			return val.id === peerStream.id
-		}))
-		if (!exist) {
-			newPeerStreams.push(peerStream);
-			peersRef.current.value = newPeerStreams;
-			updatePeerStreams(newPeerStreams);
-		}
-	}
-
-	const addParticipant = (id, name) => {
+	const addParticipant = (stream, id, name) => {
 		participantsRef.current.value = participantsRef.current.value || {};
-		participantsRef.current.value[id] = name;
-		console.log(participantsRef.current.value);
-		updateParticipants(Object.values(participantsRef.current.value || {}));
+		if (!participantsRef.current.value[id]) {
+			participantsRef.current.value[id] = { name, stream };
+		} else {
+			participantsRef.current.value[id].stream = stream;
+		}
+		updateParticipantState();
 	}
 
-	const addExistingParticipants = (participants) => {
-		participants && participants.map((participant)=>{
-			addParticipant(participant.peer_id, participant.username);
+	const removeParticipant = (id) => {
+		delete participantsRef.current.value[id];
+		updateParticipantState();
+	}
+
+	const updateParticipantStream = (id, stream) => {
+		participantsRef.current.value[id].stream = stream;
+		updateParticipantState();
+	}
+
+	const initializeSocket = (videoData) => {
+		socketRef.current = io.connect("/");
+		videoData?.peer?.on('open', peerId => {
+			socketRef.current.emit('join-room', {
+				"username": username,
+				"meet_name": meetname,
+				"meet_id": meetid,
+				"peer_id": peerId
+			});
+			addParticipant(videoData.stream, peerId, username);
+			socketRef.current.on('new-user-connected', peerData => {
+				const peerObj = {username, peerid: peerId};
+				const call = videoData.peer.call(peerData.peer_id, videoData.stream, {metadata: peerObj})
+				call.on('stream', peerStream => addParticipant(peerStream, peerData.peer_id, peerData.username));
+			})
+			socketRef.current.on('user-disconnected', peerData => {
+				removeParticipant(peerData.peer_id);
+			})
+		})
+		videoData?.peer?.on('call', call => {
+			call.answer(videoData.stream)
+			call.on('stream', peerStream =>  addParticipant(peerStream, call.metadata.peerid, call.metadata.username));
 		})
 	}
 
@@ -74,28 +104,7 @@ export default function Meet({ username, meetname, meetid}) {
 
 				fetch('/api/')
 					.then(() => {
-						socketRef.current = io.connect("/");
-						newUserVideoData?.peer?.on('open', peerId => {
-							socketRef.current.emit('join-room', {
-								"username": username,
-								"meet_name": meetname,
-								"meet_id": meetid,
-								"peer_id": peerId
-							});
-							addParticipant(peerId, username);
-							socketRef.current.on('sync-existing-users', existingUsers => {
-								addExistingParticipants(existingUsers);
-							})
-							socketRef.current.on('new-user-connected', peerData => {
-								const call = newUserVideoData.peer.call(peerData.peer_id, newUserVideoData.stream)
-								call.on('stream', peerStream => addPeer(peerStream));
-								addParticipant(peerData.peer_id, peerData.username);
-							})
-						})
-						newUserVideoData?.peer?.on('call', call => {
-							call.answer(newUserVideoData.stream)
-							call.on('stream', peerStream => addPeer(peerStream));
-						})
+						initializeSocket(newUserVideoData);
 					})
 					.catch(err => {
 						console.log(err);
@@ -140,22 +149,22 @@ export default function Meet({ username, meetname, meetid}) {
 
 	return showContent && (
 		<main className={styles.main}>
-			<button onClick={toggleVideo}>Toggle Webcam & Screen Share</button>
-			<p>Meet ID: {meetid}&nbsp;<button onClick={()=>navigator.clipboard.writeText(meetid)}>Copy</button></p>
+			{false && <button onClick={toggleVideo}>Toggle Webcam & Screen Share</button>}
+			<div className={styles.meetid_container}>
+				<p className={styles.meetid}>{"Meet ID: " +meetid}</p>
+				<button onClick={()=>navigator.clipboard.writeText(meetid)}>Copy</button>
+			</div>
 			<div className={styles.videosContainer}>
-				<Video stream={userVideoData.stream}/>
-				{peerStreams.length > 0 && peerStreams.map((peerStream, id) => {
-					return <Video stream={peerStream} key={"peer-video-" + id} />;
-				})}
+				{participants.length > 0 ?
+					participants.map((participant) => {
+						return 	<div className={styles.participantContainer}>
+							<Video stream={userVideoData.stream} key={participant.id}/>
+							<p className={styles.participantName}>{participant.name}</p>
+							</div>
+					})
+				: <p style={styles.loadingText}>Loading meet...</p>}
 			</div>
 			<p>Swipe left/right to view other participants</p>
-			<div className={styles.participantsContainer}>
-				{
-					participants.map((value, id)=>{
-						return <div className={styles.participantName} key={"participant-names-" + id}>{value}</div>
-					})
-				}
-			</div>
 		</main>
 	)
 }

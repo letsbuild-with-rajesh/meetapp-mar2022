@@ -13,16 +13,12 @@ const socketHandler = (req, res) => {
           meets[meet_id] = { meet_name, users: {} }
         }
         meets[meet_id].users[peer_id] = username;
-
-        const usersInMeet = [];
-        Object.keys(meets[meet_id].users).map((peerId)=>{
-          if (peerId !== peer_id) {
-            usersInMeet.push({ peer_id: peerId, username: meets[meet_id].users[peerId] });
-          }
-        });
-
-        socket.emit("sync-existing-users", usersInMeet);
         socket.broadcast.to(meet_id).emit('new-user-connected', { username, peer_id });
+
+        socket.on("disconnect", () => {
+          delete meets[meet_id].users[peer_id];
+          socket.broadcast.to(meet_id).emit('user-disconnected', { peer_id });
+        });
       });
     })
     res.socket.server.io = io

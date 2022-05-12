@@ -1,10 +1,21 @@
-.main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  margin: 2rem 0;
+@import "common";
+
+$videowidth: 320px;
+$border: 1px solid black;
+$border-radius: 8px;
+
+.meetid_container {
+	display: flex;
+	justify-content: space-evenly;
+	margin: 16px 0px;
+}
+.meetid {
+	margin: 0;
+	width: 65%;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	display: inline-block;
+	white-space: nowrap;
 }
 
 .videosContainer {
@@ -12,25 +23,41 @@
 	overflow-x: auto;
 	gap: 4%;
 	padding: 2%;
-	border: 1px solid black;
+	border: $border;
+	border-radius: $border-radius;
+	background-color: cornflowerblue;
 	margin: 0 4%;
+	width: 92%;
 }
 
-.participantsContainer {
-	display: flex;
-	overflow-x: auto;
-	gap: 2%;
-	border: 1px solid black;
-	width: 92%;
-	padding: 1%;
+.loadingText {
+	color: white;
+	font-weight: 500;
+	margin: auto;
+}
+
+.participantContainer {
+	border: $border;
+	border-radius: $border-radius;
+	padding: 8px;
+	background-color: yellow;
+	margin: auto;
 }
 
 .participantName {
-	border: 1px solid black;
-	border-radius: 4px;
-	padding: 8px;
+	display: flex;
+	justify-content: center;
+	padding: 4px;
+	margin: 0;
+	border: $border;
+	border-radius: $border-radius;
+	text-overflow: ellipsis;
+	font-weight: 500;
+	background-color: deeppink;
+	color:white;
 }
 
 .video {
-	width: 100%;
+	width: $videowidth;
+	border-radius: $border-radius;
 }

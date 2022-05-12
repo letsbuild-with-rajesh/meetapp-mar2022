@@ -31,6 +31,7 @@ export default function Home() {
     let { username, meetid, meetname } = meetInputs;
     if (startOrJoinConversation === START_CONVERSATION) {
       meetid = uuidV4();
+      meetid = Buffer.from(meetid.replace(/-/g, ""), 'hex').toString('base64');
     }
     router.push('/meet?meetid='+meetid+'&meetname='+meetname+'&username='+username);
   }

@@ -1,0 +1,25 @@
+.app_wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.app_container {
+  min-height: 100vh;
+  border: 1px solid;
+  border-radius: 0.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 1px 0px 16px grey;
+  width: 50%;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  margin: 2rem 0;
+	width: 100%;
+}
