@@ -4,14 +4,22 @@ $videowidth: 320px;
 $border: 1px solid black;
 $border-radius: 8px;
 
+.meetdescription_container {
+	margin: 16px 0px;
+}
+
+.meetname_container, .meetid_container {
+	margin: 12px 0px;
+	text-align: center;
+}
+
 .meetid_container {
 	display: flex;
 	justify-content: space-evenly;
-	margin: 16px 0px;
 }
 .meetid {
-	margin: 0;
 	width: 65%;
+	margin: 0px 8px;
 	text-overflow: ellipsis;
 	overflow: hidden;
 	display: inline-block;

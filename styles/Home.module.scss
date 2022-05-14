@@ -11,7 +11,7 @@
 }
 
 .description {
-  margin: 2rem 1rem;
+  margin: 1rem 1rem;
   line-height: 1.5;
 }
 
@@ -20,22 +20,27 @@
   margin: 0;
 }
 
-.content_container {
+.toggle_btn_container {
   display: flex;
   justify-content: center;
   align-items: center;
+	margin: 16px;
 }
 
 .input_block {
   border: 1px solid;
   border-radius: 0.25rem;
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 .input_container {
   display: flex;
   justify-content: flex-end;
-  padding: 0.25rem;
+  padding: 0.5rem;
+}
+
+.submit {
+	margin: 16px 0px;
 }
 
 @media (max-width: 800px) {

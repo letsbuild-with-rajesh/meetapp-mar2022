@@ -40,7 +40,7 @@ export default function Home() {
     <main className={styles.main}>
       <h1 className={styles.title}>Hey, Welcome to <p className={styles.app_name}>MeetApp!</p></h1>
       <h3 className={styles.description}>No hassle of Sign Ups! Just get started for a quick conversation!</h3>
-      <div className={styles.content_container}>
+      <div className={styles.toggle_btn_container}>
         <button onClick={toggleConversationType}>Click here to {startOrJoinConversation === START_CONVERSATION ? "Join" : "Start"} conversation</button>
       </div>
       <br />

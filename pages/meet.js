@@ -2,10 +2,10 @@ import { useRouter } from 'next/router';
 import { useState, useEffect, useRef } from 'react';
 import io from "socket.io-client";
 import { getWebCamStream, getScreenShareStream } from "../utils/streams";
-import { NO_STREAM, WEBCAM, SCREEN_SHARE } from '../utils/constants'
+import { NO_STREAM, WEBCAM, SCREEN_SHARE } from '../utils/constants';
 import styles from '../styles/Meet.module.scss';
 
-function Meet({ username, meetname, meetid}) {
+function Meet({ username, meetname, meetid }) {
 	const initialUserVideoData = useState({
 		stream: null,
 		streamType: NO_STREAM,
@@ -14,13 +14,13 @@ function Meet({ username, meetname, meetid}) {
 	const socketRef = useRef();
 	const [userVideoData, updateUserVideoData] = useState(initialUserVideoData);
 	const participantsRef = useRef({});
-	const [ participants, setParticipants ] = useState([])
+	const [participants, setParticipants] = useState([])
 	const showContent = !(!username || !(meetname || meetid));
 	const router = useRouter();
 
-	const updateParticipantState = () => {
+	const updateParticipantsState = () => {
 		const participants = participantsRef.current.value || {};
-		const data = Object.keys(participants).map((key)=> {
+		const data = Object.keys(participants).map((key) => {
 			return {
 				stream: participants[key].stream,
 				name: participants[key].name,
@@ -40,24 +40,31 @@ function Meet({ username, meetname, meetid}) {
 		})
 	}
 
+	const doesParticipantAlreadyExist = (id, name) => {
+		for (let i = 0; i < participants.length; i++) {
+			if (id === participants[i].id || name === participants[i].name) return true;
+		}
+		return false;
+	}
+
 	const addParticipant = (stream, id, name) => {
 		participantsRef.current.value = participantsRef.current.value || {};
-		if (!participantsRef.current.value[id]) {
+		if (!doesParticipantAlreadyExist(id, name)) {
 			participantsRef.current.value[id] = { name, stream };
 		} else {
 			participantsRef.current.value[id].stream = stream;
 		}
-		updateParticipantState();
+		updateParticipantsState();
 	}
 
 	const removeParticipant = (id) => {
 		delete participantsRef.current.value[id];
-		updateParticipantState();
+		updateParticipantsState();
 	}
 
 	const updateParticipantStream = (id, stream) => {
 		participantsRef.current.value[id].stream = stream;
-		updateParticipantState();
+		updateParticipantsState();
 	}
 
 	const initializeSocket = (videoData) => {
@@ -71,8 +78,8 @@ function Meet({ username, meetname, meetid}) {
 			});
 			addParticipant(videoData.stream, peerId, username);
 			socketRef.current.on('new-user-connected', peerData => {
-				const peerObj = {username, peerid: peerId};
-				const call = videoData.peer.call(peerData.peer_id, videoData.stream, {metadata: peerObj})
+				const peerObj = { username, peerid: peerId };
+				const call = videoData.peer.call(peerData.peer_id, videoData.stream, { metadata: peerObj })
 				call.on('stream', peerStream => addParticipant(peerStream, peerData.peer_id, peerData.username));
 			})
 			socketRef.current.on('user-disconnected', peerData => {
@@ -81,7 +88,7 @@ function Meet({ username, meetname, meetid}) {
 		})
 		videoData?.peer?.on('call', call => {
 			call.answer(videoData.stream)
-			call.on('stream', peerStream =>  addParticipant(peerStream, call.metadata.peerid, call.metadata.username));
+			call.on('stream', peerStream => addParticipant(peerStream, call.metadata.peerid, call.metadata.username));
 		})
 	}
 
@@ -115,7 +122,7 @@ function Meet({ username, meetname, meetid}) {
 			})
 	}, []);
 
-	useEffect(()=> {
+	useEffect(() => {
 		return () => {
 			let tracks = userVideoData?.stream?.getTracks()
 			tracks && tracks?.forEach(track => {
@@ -124,7 +131,7 @@ function Meet({ username, meetname, meetid}) {
 		}
 	}, [userVideoData]);
 
-	const Video = ({stream}) => {
+	const Video = ({ stream }) => {
 		const videoRef = useRef(null);
 
 		useEffect(async () => {
@@ -137,7 +144,7 @@ function Meet({ username, meetname, meetid}) {
 				video.srcObject = stream;
 				if (video.isPlaying) {
 					video.isPlaying = false;
-					video.play().then(()=>{
+					video.play().then(() => {
 						video.isPlaying = true;
 					})
 				}
@@ -150,19 +157,24 @@ function Meet({ username, meetname, meetid}) {
 	return showContent && (
 		<main className={styles.main}>
 			{false && <button onClick={toggleVideo}>Toggle Webcam & Screen Share</button>}
-			<div className={styles.meetid_container}>
-				<p className={styles.meetid}>{"Meet ID: " +meetid}</p>
-				<button onClick={()=>navigator.clipboard.writeText(meetid)}>Copy</button>
+			<div className={styles.meetdescription_container}>
+				<div className={styles.meetname_container}>
+					<span className={styles.meetname}>{"Meet Name: " + meetname}</span>
+				</div>
+				<div className={styles.meetid_container}>
+					<span className={styles.meetid}>{"Meet ID: " + meetid}</span>
+					<button onClick={() => navigator.clipboard.writeText(meetid)}>Copy</button>
+				</div>
 			</div>
 			<div className={styles.videosContainer}>
 				{participants.length > 0 ?
 					participants.map((participant) => {
-						return 	<div className={styles.participantContainer} key={participant.id} >
+						return <div className={styles.participantContainer} key={participant.id} >
 							<Video stream={participant.stream} />
 							<p className={styles.participantName}>{participant.name}</p>
-							</div>
+						</div>
 					})
-				: <p className={styles.loadingText}>Loading meet...</p>}
+					: <p className={styles.loadingText}>Loading meet...</p>}
 			</div>
 			<p>Swipe left/right to view other participants</p>
 		</main>
