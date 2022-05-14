@@ -3,9 +3,9 @@ import { useState, useEffect, useRef } from 'react';
 import io from "socket.io-client";
 import { getWebCamStream, getScreenShareStream } from "../utils/streams";
 import { NO_STREAM, WEBCAM, SCREEN_SHARE } from '../utils/constants'
-import styles from '../styles/Meet.module.scss'
+import styles from '../styles/Meet.module.scss';
 
-export default function Meet({ username, meetname, meetid}) {
+function Meet({ username, meetname, meetid}) {
 	const initialUserVideoData = useState({
 		stream: null,
 		streamType: NO_STREAM,
@@ -157,18 +157,21 @@ export default function Meet({ username, meetname, meetid}) {
 			<div className={styles.videosContainer}>
 				{participants.length > 0 ?
 					participants.map((participant) => {
-						return 	<div className={styles.participantContainer}>
-							<Video stream={userVideoData.stream} key={participant.id}/>
+						return 	<div className={styles.participantContainer} key={participant.id} >
+							<Video stream={participant.stream} />
 							<p className={styles.participantName}>{participant.name}</p>
 							</div>
 					})
-				: <p style={styles.loadingText}>Loading meet...</p>}
+				: <p className={styles.loadingText}>Loading meet...</p>}
 			</div>
 			<p>Swipe left/right to view other participants</p>
 		</main>
 	)
 }
 
+
 Meet.getInitialProps = async ({ query }) => {
 	return query;
 }
+
+export default Meet;
