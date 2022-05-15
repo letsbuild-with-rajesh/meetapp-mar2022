@@ -6,19 +6,23 @@ $border-radius: 8px;
 
 .meetdescription_container {
 	margin: 16px 0px;
+	width: 100%;
 }
 
 .meetname_container, .meetid_container {
-	margin: 12px 0px;
 	text-align: center;
+}
+
+.meetname_container {
+	margin: 12px 0px;
 }
 
 .meetid_container {
 	display: flex;
-	justify-content: space-evenly;
+	justify-content: center;
+	margin: 0px 36px;
 }
 .meetid {
-	width: 65%;
 	margin: 0px 8px;
 	text-overflow: ellipsis;
 	overflow: hidden;
@@ -33,7 +37,7 @@ $border-radius: 8px;
 	padding: 2%;
 	border: $border;
 	border-radius: $border-radius;
-	background-color: cornflowerblue;
+	background-color: black;
 	margin: 0 4%;
 	width: 92%;
 }
@@ -48,7 +52,7 @@ $border-radius: 8px;
 	border: $border;
 	border-radius: $border-radius;
 	padding: 8px;
-	background-color: yellow;
+	background-color: cornflowerblue;
 	margin: auto;
 }
 
@@ -58,10 +62,11 @@ $border-radius: 8px;
 	padding: 4px;
 	margin: 0;
 	border: $border;
+	border-color: white;
 	border-radius: $border-radius;
 	text-overflow: ellipsis;
 	font-weight: 500;
-	background-color: deeppink;
+	background-color: grey;
 	color:white;
 }
 

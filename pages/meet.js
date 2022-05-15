@@ -151,7 +151,18 @@ function Meet({ username, meetname, meetid }) {
 			}
 		}, [stream]);
 
-		return <video playsInline autoPlay ref={videoRef} className={styles.video} />
+		const switchToFullScreen = () => {
+			let video = videoRef.current;
+			if (video.requestFullscreen) {
+				video.requestFullscreen();
+			} else if (video.webkitRequestFullscreen) {
+				video.webkitRequestFullscreen();
+			} else if (video.msRequestFullscreen) {
+				video.msRequestFullscreen();
+			}
+		}
+
+		return <video playsInline autoPlay ref={videoRef} className={styles.video} onDoubleClick={switchToFullScreen}/>
 	};
 
 	return showContent && (
