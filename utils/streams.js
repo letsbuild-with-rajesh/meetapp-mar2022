@@ -1,13 +1,10 @@
-export const getWebCamStream = (controls = {video: true, audio: true}) => {
-	if (!controls.video && !controls.audio) {
-		return new Promise((resolve)=> resolve(null));
-	}
+export const getWebCamStream = () => {
 	return navigator.mediaDevices.getUserMedia({
-		video: controls.video ? {
+		video: {
 			frameRate: 60,
 			noiseSuppression: true
-		} : false,
-		audio: controls.audio
+		},
+		audio: true
 	});
 }
 

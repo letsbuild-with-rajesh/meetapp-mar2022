@@ -2,7 +2,7 @@ import Video from '../components/Video';
 import styles from '../styles/MeetVideos.module.scss';
 
 const MeetVideos = (props) => {
-	const { participants, showAudioVideoControls, toggleUserVideo, toggleUserAudio} = props;
+	const { participants } = props;
 	return <>
 		<div className={styles.videos_container}>
 			{participants.length > 0 ?
@@ -15,10 +15,6 @@ const MeetVideos = (props) => {
 				: <p className={styles.loading_text}>Loading meet...</p>}
 		</div>
 		<p>Swipe left/right to view other participants</p>
-		{showAudioVideoControls && <div className={styles.av_controls_Container}>
-			<button onClick={toggleUserVideo}>Toggle Video On/Off</button>
-			<button onClick={toggleUserAudio}>Toggle Audio On/Off</button>
-		</div>}
 	</>
 }
 

@@ -24,6 +24,7 @@
 	padding: 8px;
 	background-color: cornflowerblue;
 	margin: auto;
+	position: relative;
 }
 
 .participant_name {
@@ -37,10 +38,4 @@
 	font-weight: 500;
 	background-color: grey;
 	color:white;
-}
-
-.av_controls_Container {
-	display: flex;
-	justify-content: space-around;
-	width: 100%;
 }

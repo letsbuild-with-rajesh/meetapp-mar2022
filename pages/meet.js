@@ -14,13 +14,12 @@ function Meet({ username, meetname, meetid }) {
 		stream: null, streamType: NO_STREAM,
 		peer: null
 	});
-	const [userVideoOn, setUserVideoOn] = useState(true);
-	const [userAudioOn, setUserAudioOn] = useState(true);
 	const participantsRef = useRef({});
 	const [participants, setParticipants] = useState([]);
 	const showContent = !(!username || !(meetname || meetid));
 	const [showChat, setShowChat] = useState(false);
 	const newChatMessageRef = useRef('');
+	const chatMessagesRef = useRef([]);
 	const [chatMessages, setChatMessages] = useState([]);
 	const router = useRouter();
 
@@ -34,10 +33,7 @@ function Meet({ username, meetname, meetid }) {
 	}
 
 	const updateUserStream = (stream, streamType) => {
-		updateUserVideoData({
-			stream,
-			streamType
-		});
+		updateUserVideoData({ stream, streamType });
 		participantsRef.current.value[participants[0].id].stream = stream;
 		replaceStreamForPeers(stream);
 	}
@@ -55,10 +51,11 @@ function Meet({ username, meetname, meetid }) {
 		replaceStreams(participantsRef, updateParticipantsState, stream)
 	}
 
-	const chatSendMessage = () => {
+	const sendNewMessage = () => {
 		const message = { peerid: participants[0].id, username, message: newChatMessageRef.current.value };
 		socketRef.current.emit("chat-message", message);
-		setChatMessages([...chatMessages, message]);
+		chatMessagesRef.current = [...chatMessagesRef.current, message];
+		setChatMessages(chatMessagesRef.current);
 		newChatMessageRef.current.value = '';
 	}
 
@@ -89,7 +86,8 @@ function Meet({ username, meetname, meetid }) {
 				removeParticipant(participantsRef, updateParticipantsState, peerData.peer_id);
 			});
 			socketRef.current.on('chat-message', data => {
-				setChatMessages([...chatMessages, data]);
+        chatMessagesRef.current = [...chatMessagesRef.current, data];
+        setChatMessages(chatMessagesRef.current);
 			});
 		})
 		videoData?.peer?.on('call', call => {
@@ -148,16 +146,6 @@ function Meet({ username, meetname, meetid }) {
 		}
 	}, [userVideoData]);
 
-	const toggleOnOffUserVideo = () => {
-		getWebCamStream({ video: !userVideoOn, audio: userAudioOn }).then((stream) => updateUserStream(stream, WEBCAM));
-		setUserVideoOn(!userVideoOn);
-	}
-
-	const toggleOnOffUserAudio = () => {
-		getWebCamStream({ video: userVideoOn, audio: !userAudioOn }).then((stream) => updateUserStream(stream, WEBCAM));
-		setUserAudioOn(!userAudioOn);
-	}
-
 	if (!showContent) {
 		return null;
 	}
@@ -167,7 +155,7 @@ function Meet({ username, meetname, meetid }) {
 			closeChat={()=>setShowChat(!showChat)}
 			chatMessages={chatMessages}
 			newMessageRef={newChatMessageRef}
-			sendNewMessage={chatSendMessage}
+			sendNewMessage={sendNewMessage}
 			userId={participants[0].id}
 			/>
 	}
@@ -195,12 +183,7 @@ function Meet({ username, meetname, meetid }) {
 					</div>) : null
 				}
 			</div>
-			<MeetVideos
-				participants={participants}
-				showAudioVideoControls={userVideoData.streamType === WEBCAM}
-				toggleUserVideo={toggleOnOffUserVideo}
-				toggleUserAudio={toggleOnOffUserAudio}
-				/>
+			<MeetVideos	participants={participants} />
 		</main>
 	)
 }

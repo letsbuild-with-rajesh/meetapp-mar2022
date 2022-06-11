@@ -6,7 +6,7 @@ export const getParticipantsArray = (ref) => {
 			stream: participants[key].stream,
 			name: participants[key].name,
 			id: key,
-			role: participants[key].role,
+			role: participants[key].role
 		}
 	});
 }
