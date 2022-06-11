@@ -9,6 +9,8 @@ Next.js (React.js + Node.js) + socket.io + PeerJS
 
 <details><summary>Click to show/hide a demo gif</summary>
 <p>
-Demo yet to be added!
+
+![Loading demo gif ...](https://github.com/letsbuild-with-rajesh/meetapp-mar2022/blob/main/public/demo.gif?raw=true)
+
 </p>
 </details>
