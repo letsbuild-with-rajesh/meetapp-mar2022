@@ -1,4 +1,4 @@
-# meetapp-mar2022
+# Meet App
 A meet app for chats, calls and screen shares
 
 #### Developed on
