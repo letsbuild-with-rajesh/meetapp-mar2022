@@ -1,70 +1,65 @@
 import { useRouter } from 'next/router';
 import { useState, useEffect, useRef } from 'react';
 import io from "socket.io-client";
-import { getWebCamStream, getScreenShareStream } from "../utils/streams";
-import { NO_STREAM, WEBCAM, SCREEN_SHARE } from '../utils/constants';
+import MeetVideos from '../components/MeetVideos';
+import MeetChats from '../components/MeetChats';
+import { getWebCamStream, getScreenShareStream, replaceStreams } from "../utils/streams";
+import { NO_STREAM, WEBCAM, SCREEN_SHARE, ROLE_USER, ROLE_PEER } from '../utils/constants';
+import { getParticipantsArray, addParticipant, removeParticipant } from '../utils/participants';
 import styles from '../styles/Meet.module.scss';
 
 function Meet({ username, meetname, meetid }) {
-	const initialUserVideoData = useState({
-		stream: null,
-		streamType: NO_STREAM,
-		peer: null,
-	});
 	const socketRef = useRef();
-	const [userVideoData, updateUserVideoData] = useState(initialUserVideoData);
+	const [userVideoData, updateUserVideoData] = useState({
+		stream: null, streamType: NO_STREAM,
+		peer: null
+	});
+	const [userVideoOn, setUserVideoOn] = useState(true);
+	const [userAudioOn, setUserAudioOn] = useState(true);
 	const participantsRef = useRef({});
-	const [participants, setParticipants] = useState([])
+	const [participants, setParticipants] = useState([]);
 	const showContent = !(!username || !(meetname || meetid));
+	const [showChat, setShowChat] = useState(false);
+	const newChatMessageRef = useRef('');
+	const [chatMessages, setChatMessages] = useState([]);
 	const router = useRouter();
 
-	const updateParticipantsState = () => {
+	const getUserStream = () => {
 		const participants = participantsRef.current.value || {};
-		const data = Object.keys(participants).map((key) => {
-			return {
-				stream: participants[key].stream,
-				name: participants[key].name,
-				id: key
+		for (let key in participants) {
+			if (participants[key].role === ROLE_USER) {
+				return participants[key].stream;
 			}
+		}
+	}
+
+	const updateUserStream = (stream, streamType) => {
+		updateUserVideoData({
+			stream,
+			streamType
 		});
-		setParticipants(data);
+		participantsRef.current.value[participants[0].id].stream = stream;
+		replaceStreamForPeers(stream);
 	}
 
-	const toggleVideo = () => {
+	const toggleWebCamScreenShareVideo = () => {
 		const streamPromise = userVideoData.streamType === WEBCAM ? getScreenShareStream() : getWebCamStream();
-		streamPromise.then((stream) => {
-			updateUserVideoData({
-				stream,
-				streamType: userVideoData.streamType === WEBCAM ? SCREEN_SHARE : WEBCAM
-			})
-		})
+		streamPromise.then((stream) => updateUserStream(stream, userVideoData.streamType === WEBCAM ? SCREEN_SHARE : WEBCAM));
 	}
 
-	const doesParticipantAlreadyExist = (id, name) => {
-		for (let i = 0; i < participants.length; i++) {
-			if (id === participants[i].id || name === participants[i].name) return true;
-		}
-		return false;
+	const updateParticipantsState = () => {
+		setParticipants(getParticipantsArray(participantsRef));
 	}
 
-	const addParticipant = (stream, id, name) => {
-		participantsRef.current.value = participantsRef.current.value || {};
-		if (!doesParticipantAlreadyExist(id, name)) {
-			participantsRef.current.value[id] = { name, stream };
-		} else {
-			participantsRef.current.value[id].stream = stream;
-		}
-		updateParticipantsState();
+	const replaceStreamForPeers = (stream) => {
+		replaceStreams(participantsRef, updateParticipantsState, stream)
 	}
 
-	const removeParticipant = (id) => {
-		delete participantsRef.current.value[id];
-		updateParticipantsState();
-	}
-
-	const updateParticipantStream = (id, stream) => {
-		participantsRef.current.value[id].stream = stream;
-		updateParticipantsState();
+	const chatSendMessage = () => {
+		const message = { peerid: participants[0].id, username, message: newChatMessageRef.current.value };
+		socketRef.current.emit("chat-message", message);
+		setChatMessages([...chatMessages, message]);
+		newChatMessageRef.current.value = '';
 	}
 
 	const initializeSocket = (videoData) => {
@@ -76,19 +71,37 @@ function Meet({ username, meetname, meetid }) {
 				"meet_id": meetid,
 				"peer_id": peerId
 			});
-			addParticipant(videoData.stream, peerId, username);
+			addParticipant(participantsRef, updateParticipantsState, null, videoData.stream, peerId, username, ROLE_USER);
 			socketRef.current.on('new-user-connected', peerData => {
 				const peerObj = { username, peerid: peerId };
-				const call = videoData.peer.call(peerData.peer_id, videoData.stream, { metadata: peerObj })
-				call.on('stream', peerStream => addParticipant(peerStream, peerData.peer_id, peerData.username));
+				const call = videoData.peer.call(peerData.peer_id, getUserStream(), { metadata: peerObj });
+				call.on('stream', peerStream => addParticipant(
+					participantsRef,
+					updateParticipantsState,
+					call,
+					peerStream,
+					peerData.peer_id,
+					peerData.username,
+					ROLE_PEER
+				));
 			})
 			socketRef.current.on('user-disconnected', peerData => {
-				removeParticipant(peerData.peer_id);
-			})
+				removeParticipant(participantsRef, updateParticipantsState, peerData.peer_id);
+			});
+			socketRef.current.on('chat-message', data => {
+				setChatMessages([...chatMessages, data]);
+			});
 		})
 		videoData?.peer?.on('call', call => {
-			call.answer(videoData.stream)
-			call.on('stream', peerStream => addParticipant(peerStream, call.metadata.peerid, call.metadata.username));
+			call.answer(getUserStream());
+			call.on('stream', peerStream => addParticipant(
+				participantsRef,
+				updateParticipantsState,
+				call, peerStream,
+				call.metadata.peerid,
+				call.metadata.username,
+				ROLE_PEER
+			));
 		})
 	}
 
@@ -120,6 +133,10 @@ function Meet({ username, meetname, meetid }) {
 			.catch(err => {
 				console.log(err);
 			})
+		return () => {
+			socketRef.current.disconnect();
+			participantsRef.current.value = {};
+		}
 	}, []);
 
 	useEffect(() => {
@@ -127,47 +144,38 @@ function Meet({ username, meetname, meetid }) {
 			let tracks = userVideoData?.stream?.getTracks()
 			tracks && tracks?.forEach(track => {
 				track.stop();
-			});
+			})
 		}
 	}, [userVideoData]);
 
-	const Video = ({ stream }) => {
-		const videoRef = useRef(null);
+	const toggleOnOffUserVideo = () => {
+		getWebCamStream({ video: !userVideoOn, audio: userAudioOn }).then((stream) => updateUserStream(stream, WEBCAM));
+		setUserVideoOn(!userVideoOn);
+	}
 
-		useEffect(async () => {
-			if (stream) {
-				let video = videoRef.current;
-				let tracks = video?.srcObject?.getTracks();
-				tracks && tracks.forEach(track => {
-					if (track.kind === 'video') track.stop();
-				});
-				video.srcObject = stream;
-				if (video.isPlaying) {
-					video.isPlaying = false;
-					video.play().then(() => {
-						video.isPlaying = true;
-					})
-				}
-			}
-		}, [stream]);
+	const toggleOnOffUserAudio = () => {
+		getWebCamStream({ video: userVideoOn, audio: !userAudioOn }).then((stream) => updateUserStream(stream, WEBCAM));
+		setUserAudioOn(!userAudioOn);
+	}
 
-		const switchToFullScreen = () => {
-			let video = videoRef.current;
-			if (video.requestFullscreen) {
-				video.requestFullscreen();
-			} else if (video.webkitRequestFullscreen) {
-				video.webkitRequestFullscreen();
-			} else if (video.msRequestFullscreen) {
-				video.msRequestFullscreen();
-			}
-		}
+	if (!showContent) {
+		return null;
+	}
 
-		return <video playsInline autoPlay ref={videoRef} className={styles.video} onDoubleClick={switchToFullScreen}/>
-	};
+	if (showChat) {
+		return <MeetChats
+			closeChat={()=>setShowChat(!showChat)}
+			chatMessages={chatMessages}
+			newMessageRef={newChatMessageRef}
+			sendNewMessage={chatSendMessage}
+			userId={participants[0].id}
+			/>
+	}
 
-	return showContent && (
+	const showScreenShareOption = typeof window !== 'undefined' && typeof window.navigator !== 'undefined' && !!navigator?.mediaDevices?.getDisplayMedia
+
+	return (
 		<main className={styles.main}>
-			{false && <button onClick={toggleVideo}>Toggle Webcam & Screen Share</button>}
 			<div className={styles.meetdescription_container}>
 				<div className={styles.meetname_container}>
 					<span className={styles.meetname}>{"Meet Name: " + meetname}</span>
@@ -176,22 +184,26 @@ function Meet({ username, meetname, meetid }) {
 					<span className={styles.meetid}>{"Meet ID: " + meetid}</span>
 					<button onClick={() => navigator.clipboard.writeText(meetid)}>Copy</button>
 				</div>
+				{participants.length > 0 && showScreenShareOption ?
+					(<div className={styles.switch_btns}>
+						<button onClick={toggleWebCamScreenShareVideo}>
+							{'Switch to ' + (userVideoData.streamType === WEBCAM ? 'Screen Share' : 'Webcam')}
+						</button>
+						<button onClick={() => setShowChat(!showChat)}>
+							Show Chat
+						</button>
+					</div>) : null
+				}
 			</div>
-			<div className={styles.videosContainer}>
-				{participants.length > 0 ?
-					participants.map((participant) => {
-						return <div className={styles.participantContainer} key={participant.id} >
-							<Video stream={participant.stream} />
-							<p className={styles.participantName}>{participant.name}</p>
-						</div>
-					})
-					: <p className={styles.loadingText}>Loading meet...</p>}
-			</div>
-			<p>Swipe left/right to view other participants</p>
+			<MeetVideos
+				participants={participants}
+				showAudioVideoControls={userVideoData.streamType === WEBCAM}
+				toggleUserVideo={toggleOnOffUserVideo}
+				toggleUserAudio={toggleOnOffUserAudio}
+				/>
 		</main>
 	)
 }
-
 
 Meet.getInitialProps = async ({ query }) => {
 	return query;

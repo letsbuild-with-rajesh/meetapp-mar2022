@@ -19,6 +19,9 @@ const socketHandler = (req, res) => {
           delete meets[meet_id].users[peer_id];
           socket.broadcast.to(meet_id).emit('user-disconnected', { peer_id });
         });
+				socket.on("chat-message", data => {
+					socket.to(meet_id).emit("chat-message", data);
+				});
       });
     })
     res.socket.server.io = io

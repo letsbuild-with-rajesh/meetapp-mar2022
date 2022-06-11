@@ -1,0 +1,11 @@
+@import "common";
+
+.video {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 320px;
+	aspect-ratio: 2/1.5;
+	border: $border;
+	border-color: white;
+}

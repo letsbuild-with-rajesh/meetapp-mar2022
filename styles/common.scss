@@ -1,3 +1,6 @@
+$border: 1px solid black;
+$border-radius: 8px;
+
 .app_wrapper {
   display: flex;
   justify-content: center;
@@ -20,6 +23,6 @@
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  margin: 2rem 0;
+  padding: 2rem 0;
 	width: 100%;
 }

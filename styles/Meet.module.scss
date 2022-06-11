@@ -1,8 +1,11 @@
 @import "common";
 
-$videowidth: 320px;
-$border: 1px solid black;
-$border-radius: 8px;
+.switch_btns {
+	display: flex;
+	justify-content: space-evenly;
+	width: 100%;
+	margin: 12px 0px;
+}
 
 .meetdescription_container {
 	margin: 16px 0px;
@@ -28,50 +31,4 @@ $border-radius: 8px;
 	overflow: hidden;
 	display: inline-block;
 	white-space: nowrap;
-}
-
-.videosContainer {
-	display: flex;
-	overflow-x: auto;
-	gap: 4%;
-	padding: 2%;
-	border: $border;
-	border-radius: $border-radius;
-	background-color: black;
-	margin: 0 4%;
-	width: 92%;
-}
-
-.loadingText {
-	color: white;
-	font-weight: 500;
-	margin: auto;
-}
-
-.participantContainer {
-	border: $border;
-	border-radius: $border-radius;
-	padding: 8px;
-	background-color: cornflowerblue;
-	margin: auto;
-}
-
-.participantName {
-	display: flex;
-	justify-content: center;
-	padding: 4px;
-	margin: 0;
-	border: $border;
-	border-color: white;
-	border-radius: $border-radius;
-	text-overflow: ellipsis;
-	font-weight: 500;
-	background-color: grey;
-	color:white;
-}
-
-.video {
-	width: $videowidth;
-	border-radius: $border-radius;
-	aspect-ratio: 2/1.5
 }

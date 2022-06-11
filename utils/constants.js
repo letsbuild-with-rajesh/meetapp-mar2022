@@ -5,3 +5,5 @@ export const VIDEO_WIDTH = 720;
 export const VIDEO_HEIGHT = 480;
 export const VIDEO_WIDTH_FULL = 1080;
 export const VIDEO_HEIGHT_FULL = 720;
+export const ROLE_USER = "role-user";
+export const ROLE_PEER = "role-peer";

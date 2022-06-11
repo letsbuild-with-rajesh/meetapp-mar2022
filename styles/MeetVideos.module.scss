@@ -1,0 +1,46 @@
+@import "common";
+
+.videos_container {
+	display: flex;
+	overflow-x: auto;
+	gap: 4%;
+	padding: 2%;
+	border: $border;
+	border-radius: $border-radius;
+	background-color: black;
+	margin: 0 4%;
+	width: 92%;
+}
+
+.loading_text {
+	color: white;
+	font-weight: 500;
+	margin: auto;
+}
+
+.participant_container {
+	border: $border;
+	border-radius: $border-radius;
+	padding: 8px;
+	background-color: cornflowerblue;
+	margin: auto;
+}
+
+.participant_name {
+	display: flex;
+	justify-content: center;
+	padding: 4px;
+	margin: 0;
+	border: $border;
+	border-color: white;
+	text-overflow: ellipsis;
+	font-weight: 500;
+	background-color: grey;
+	color:white;
+}
+
+.av_controls_Container {
+	display: flex;
+	justify-content: space-around;
+	width: 100%;
+}

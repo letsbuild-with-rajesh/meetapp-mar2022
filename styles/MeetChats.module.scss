@@ -1,0 +1,65 @@
+@import "common";
+
+.chat_main {
+	padding: 0px;
+	height: 90vh;
+	justify-content: center;
+}
+
+.close_chat_Btn {
+	margin: 12px 0px;
+}
+
+.topcontainer {
+	width: 100%;
+	padding: 24px;
+	border: 8px solid pink;
+	border-radius: 4px;
+}
+
+.no_message_text {
+	display: flex;
+	justify-content: center;
+}
+
+.messages_container {
+	display: flex;
+	flex-direction: column;
+	max-height: 50vh;
+	overflow: auto;
+	padding: 12px;
+	border: 1px solid;
+	border-radius: 8px;
+}
+
+.message {
+	border: 1px solid black;
+	border-radius: 8px;
+	width: fit-content;
+	max-width: 70%;
+	padding: 4px;
+	margin: 8px 0px;
+}
+
+.align_message_right {
+	align-self: flex-end;
+}
+
+.message_username {
+	font-weight: 600;
+}
+
+.new_message_container {
+	display: flex;
+	justify-content: space-around;
+	margin-top: 16px;
+	width: 100%;
+}
+
+.new_message_input {
+	width: 70%;
+}
+
+.send_message_btn {
+	padding: 4px 16px;
+}
