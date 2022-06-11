@@ -49,6 +49,11 @@
 	font-weight: 600;
 }
 
+.message_content {
+	width: 100%;
+	word-break: break-word;
+}
+
 .new_message_container {
 	display: flex;
 	justify-content: space-around;
