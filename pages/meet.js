@@ -172,11 +172,11 @@ function Meet({ username, meetname, meetid }) {
 					<span className={styles.meetid}>{"Meet ID: " + meetid}</span>
 					<button onClick={() => navigator.clipboard.writeText(meetid)}>Copy</button>
 				</div>
-				{participants.length > 0 && showScreenShareOption ?
+				{participants.length > 0 ?
 					(<div className={styles.switch_btns}>
-						<button onClick={toggleWebCamScreenShareVideo}>
+						{showScreenShareOption && <button onClick={toggleWebCamScreenShareVideo}>
 							{'Switch to ' + (userVideoData.streamType === WEBCAM ? 'Screen Share' : 'Webcam')}
-						</button>
+						</button>}
 						<button onClick={() => setShowChat(!showChat)}>
 							Show Chat
 						</button>
